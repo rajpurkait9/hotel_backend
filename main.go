@@ -21,8 +21,13 @@ func main() {
 	}
 	r := mux.NewRouter()
 	r.HandleFunc("/api/v1/health", HealthCheckHandler).Methods("GET")
+	// users routes
 	r.HandleFunc("/api/v1/user", user_controller.CreateUser).Methods("POST")
-	// user_routes.User_routes(r)
+	r.HandleFunc("/api/v1/user", user_controller.GetAllUsers).Methods("GET")
+	r.HandleFunc("/api/v1/user/{id}", user_controller.UpdateUser).Methods("PUT")
+	r.HandleFunc("/api/v1/user/{id}", user_controller.DeleteUser).Methods("DELETE")
+	// end
+
 	r.Use(Utils.LoggingMiddleware)
 	http.Handle("/", r)
 	fmt.Println("Server is is running on port:8080")
