@@ -2,24 +2,43 @@ package mongodb_connect
 
 import (
 	"context"
-	"log"
+	"fmt"
+	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var ctx = context.TODO()
-
-func MongoConnect() {
+func ConnectMongoDB() (*mongo.Client, error) {
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
-	client, err := mongo.Connect(ctx, clientOptions)
+	client, err := mongo.NewClient(clientOptions)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err = client.Connect(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Ping the database to verify the connection
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	log.Println("Connected to MongoDB!")
+	// for getting the collection
+	GetUserCollection(client)
+
+	fmt.Println("Connected to MongoDB!")
+	return client, nil
+}
+
+var Collection *mongo.Collection
+
+func GetUserCollection(client *mongo.Client) {
+	Collection = client.Database("testdb").Collection("users")
 }
